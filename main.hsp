@@ -1,0 +1,33 @@
+#include "hspext.as"
+#uselib "gdi32.dll"
+#cfunc global AddFontResource "AddFontResourceA" sptr
+#func global GetFontResourceInfoW "GetFontResourceInfoW" wptr,wptr,wptr,wptr
+#func global RemoveFontResource "RemoveFontResourceA" sptr
+#module Fonts
+    #defcfunc GetFontName str fonttype
+        fontfile = fonttype
+        fontID = AddFontResource(fontfile)
+        bufsize = 0
+        GetFontResourceInfoW fontfile, varptr(bufsize), varptr(buf), 2
+        dim buf, (bufsize + 3) / 4
+        GetFontResourceInfoW fontfile, varptr(bufsize), varptr(buf), 2
+        fontname = cnvwtos(buf(7))
+    return fontname
+#global
+title "F0nt R3namer"
+dialog "ttf", 16, "TrueTypeFont"
+if stat = 0 {
+    end
+} 
+chdir getpath(refstr,32)
+dirlist font_list, "*.ttf"
+split font_list, "\n", font_list
+file_num = stat
+repeat file_num
+    font_paht = dir_cur + "\\" + font_list(cnt)
+    fxren font_paht, GetFontName(font_paht) + ".ttf"
+    title str(cnt) + "/" + str(file_num)
+    await
+loop
+dialog "complete"
+end
